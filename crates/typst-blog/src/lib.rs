@@ -1,4 +1,4 @@
-use typst::doc::Document;
+use typst::doc::{Document, FrameItem};
 use typst::eval::Datetime;
 
 #[tracing::instrument(skip_all)]
@@ -7,7 +7,19 @@ pub fn blog(
     ident: Option<&str>,
     timestamp: Option<Datetime>,
 ) -> Vec<u8> {
-    let mut _ctx = BlogContext::new(document);
+    let mut ctx = BlogContext::new(document);
+    
+    for frame in &document.pages {
+        for &(pos, ref item) in frame.items() {
+            match item {
+                FrameItem::Text(text) => {
+                    println!("{}", text.text.as_str())
+                }
+                _ => {}
+            }
+        }
+    }
+
     vec! [0]
 }
 
