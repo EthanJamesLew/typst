@@ -186,6 +186,7 @@ pub enum OutputFormat {
     Pdf,
     Png,
     Svg,
+    Blog
 }
 
 impl Display for OutputFormat {

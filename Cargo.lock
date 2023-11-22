@@ -2736,6 +2736,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "typst-blog"
+version = "0.9.0"
+dependencies = [
+ "typst",
+]
+
+[[package]]
 name = "typst-cli"
 version = "0.9.0"
 dependencies = [

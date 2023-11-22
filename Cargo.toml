@@ -17,6 +17,7 @@ keywords = ["typst"]
 
 [workspace.dependencies]
 typst = { path = "crates/typst" }
+typst-blog = { path = "crates/typst-blog" }
 typst-cli = { path = "crates/typst-cli" }
 typst-docs = { path = "crates/typst-docs" }
 typst-ide = { path = "crates/typst-ide" }

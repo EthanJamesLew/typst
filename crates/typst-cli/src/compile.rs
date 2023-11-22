@@ -29,6 +29,7 @@ impl CompileCommand {
                     OutputFormat::Pdf => "pdf",
                     OutputFormat::Png => "png",
                     OutputFormat::Svg => "svg",
+                    OutputFormat::Blog => "blog",
                 },
             )
         })
@@ -45,6 +46,7 @@ impl CompileCommand {
                 Some(ext) if ext.eq_ignore_ascii_case("pdf") => OutputFormat::Pdf,
                 Some(ext) if ext.eq_ignore_ascii_case("png") => OutputFormat::Png,
                 Some(ext) if ext.eq_ignore_ascii_case("svg") => OutputFormat::Svg,
+                Some(ext) if ext.eq_ignore_ascii_case("blog") => OutputFormat::Blog,
                 _ => bail!("could not infer output format for path {}.\nconsider providing the format manually with `--format/-f`", output.display()),
             }
         } else {
@@ -143,7 +145,17 @@ fn export(
             export_image(world, document, command, watching, ImageExportFormat::Svg)
         }
         OutputFormat::Pdf => export_pdf(document, command, world),
+        OutputFormat::Blog => export_blog(document, command, world),
     }
+}
+
+/// Export to a Blog
+fn export_blog(
+    document: &Document,
+    command: &CompileCommand,
+    world: &SystemWorld,
+) -> StrResult<()>{
+    Ok(())
 }
 
 /// Export to a PDF.

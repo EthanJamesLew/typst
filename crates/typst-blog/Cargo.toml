@@ -1,0 +1,19 @@
+[package]
+name = "typst-blog"
+description = "website exporter for Typst (for blog)."
+version.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[lib]
+doctest = false
+bench = false
+
+[dependencies]
+typst = { workspace = true }
