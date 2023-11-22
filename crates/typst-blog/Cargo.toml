@@ -17,3 +17,4 @@ bench = false
 
 [dependencies]
 typst = { workspace = true }
+tracing = { workspace = true }
