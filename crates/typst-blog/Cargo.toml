@@ -18,3 +18,4 @@ bench = false
 [dependencies]
 typst = { workspace = true }
 tracing = { workspace = true }
+build_html = "2.4.0"
