@@ -11,6 +11,7 @@ use typst::eval::{eco_format, Datetime, Tracer};
 use typst::geom::Color;
 use typst::syntax::{FileId, Source, Span};
 use typst::{World, WorldExt};
+use typst_blog::Blog;
 
 use crate::args::{CompileCommand, DiagnosticFormat, OutputFormat};
 use crate::watch::Status;
@@ -156,7 +157,15 @@ fn export_blog(
     world: &SystemWorld,
 ) -> StrResult<()>{
     let ident = world.input().to_string_lossy();
-    let _ = typst_blog::blog(document, Some(&ident), now());
+    let blog_output = typst_blog::blog(document, Some(&ident), now());
+    let output = command.output();
+    write_blog(&blog_output, &output)?;
+    Ok(())
+}
+
+/// write the blog to disk under the path collected by the cli
+fn write_blog(blog: &Blog, path: &PathBuf) -> StrResult<()> {
+    blog.write(path)?;
     Ok(())
 }
 
