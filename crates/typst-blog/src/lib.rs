@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use typst::diag::StrResult;
 use typst::doc::{Document, Frame, FrameItem, Meta, GroupItem, TextItem, Destination};
 use typst::eval::Datetime;
-use typst::geom::{Abs, Point, Shape};
+use typst::geom::{Abs, Point, Shape, Transform};
 use typst::image::Image;
 use typst::geom::Size;
 
@@ -94,10 +94,13 @@ pub fn write_frame(ctx: &mut PageContext, frame: &Frame) {
 
 /// Encode a group into the content stream.
 fn write_group(ctx: &mut PageContext, pos: Point, group: &GroupItem) {
+    // TODO: save / restore state
+    write_frame(ctx, &group.frame);
 }
 
 /// Encode a text run into the content stream.
 fn write_text(ctx: &mut PageContext, pos: Point, text: &TextItem) {
+    println!("text: \"{:?}\", font: {:?}, size: {:?}, color: {:?}", text.text, text.size, text.font, text.fill)
 }
 
 /// Encode a geometrical shape into the content stream.
