@@ -155,7 +155,7 @@ fn export_blog(
     document: &Document,
     command: &CompileCommand,
     world: &SystemWorld,
-) -> StrResult<()>{
+) -> StrResult<()> {
     let ident = world.input().to_string_lossy();
     let blog_output = typst_blog::blog(document, Some(&ident), now());
     let output = command.output();
