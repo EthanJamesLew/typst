@@ -4,13 +4,14 @@ use std::num::NonZeroI32;
 use std::path::PathBuf;
 
 use typst::diag::StrResult;
-use typst::doc::{Document, Frame, FrameItem, Meta, GroupItem, TextItem, Destination};
+use typst::doc::{Destination, Document, Frame, FrameItem, GroupItem, Meta, TextItem};
 use typst::eval::Datetime;
+use typst::geom::Size;
 use typst::geom::{Abs, Point, Shape, Transform};
 use typst::image::Image;
-use typst::geom::Size;
 
 use build_html::{Html, HtmlPage};
+use typst::model::{Content, Element};
 
 /// Blog Struct (contains the generated webpages and links to assets)
 #[derive(Default)]
@@ -41,89 +42,16 @@ impl Blog {
 }
 
 #[tracing::instrument(skip_all)]
-pub fn blog(
-    document: &Document,
-    ident: Option<&str>,
-    timestamp: Option<Datetime>,
-) -> Blog {
-    let mut ctx = BlogContext::new(document);
-
-    println!("{:?}", document);
-    for frame in &document.pages {
-        construct_page(&mut ctx, frame);
-    }
-
+pub fn blog(content: &Content, ident: Option<&str>, timestamp: Option<Datetime>) -> Blog {
+    let mut ctx = BlogContext::new(content);
+    println!("{:?}, {:?}", content, content.elem().name());
     ctx.blog
 }
 
-fn construct_page(ctx: &mut BlogContext, frame: &Frame) {
-    let page_ref = ctx.alloc.bump();
-    ctx.page_refs.push(page_ref);
-
-    let mut ctx = PageContext {
-        parent: ctx,
-    };
-
-    // Encode the page into the content stream.
-    write_frame(&mut ctx, frame);
-}
-
-/// Encode a frame into the content stream.
-pub fn write_frame(ctx: &mut PageContext, frame: &Frame) {
-    for &(pos, ref item) in frame.items() {
-        let x = pos.x.to_f32();
-        let y = pos.y.to_f32();
-
-        match item {
-            FrameItem::Group(group) => write_group(ctx, pos, group),
-            FrameItem::Text(text) => write_text(ctx, pos, text),
-            FrameItem::Shape(shape, _) => write_shape(ctx, pos, shape),
-            FrameItem::Image(image, size, _) => write_image(ctx, x, y, image, *size),
-            FrameItem::Meta(meta, size) => match meta {
-                Meta::Link(dest) => write_link(ctx, pos, dest, *size),
-                Meta::Elem(_) => {}
-                Meta::Hide => {}
-                Meta::PageNumbering(_) => {}
-                Meta::PdfPageLabel(_) => {},
-                _ => panic!("{:?} meta frame item not implemented", item),
-            },
-            _ => panic!("{:?} frame item not implemented", item)
-        }
-    }
-}
-
-/// Encode a group into the content stream.
-fn write_group(ctx: &mut PageContext, pos: Point, group: &GroupItem) {
-    // TODO: save / restore state
-    write_frame(ctx, &group.frame);
-}
-
-/// Encode a text run into the content stream.
-fn write_text(ctx: &mut PageContext, pos: Point, text: &TextItem) {
-    println!("text: \"{:?}\", font: {:?}, size: {:?}, color: {:?}", text.text, text.size, text.font, text.fill)
-}
-
-/// Encode a geometrical shape into the content stream.
-fn write_shape(ctx: &mut PageContext, pos: Point, shape: &Shape) {
-}
-
-/// Encode a vector or raster image into the content stream.
-fn write_image(ctx: &mut PageContext, x: f32, y: f32, image: &Image, size: Size) {
-}
-
-/// Save a link for later writing in the annotations dictionary.
-fn write_link(ctx: &mut PageContext, pos: Point, dest: &Destination, size: Size) {
-}
-
-/// An exporter for the contents of a single page.
-pub struct PageContext<'a, 'b> {
-    pub(crate) parent: &'a mut BlogContext<'b>,
-}
-
-/// Context for exporting a whole blog / document
+/// Context for exporting a whole blog content
 struct BlogContext<'a> {
-    /// the document for the blog that we're currently exporting
-    document: &'a Document,
+    /// the content for the blog that we're currently exporting
+    content: &'a Content,
     /// the output blog
     blog: Blog,
     /// Allocator for indirect reference IDs.
@@ -133,14 +61,14 @@ struct BlogContext<'a> {
 }
 
 impl<'a> BlogContext<'a> {
-    pub fn new(document: &'a Document) -> Self {
+    pub fn new(content: &'a Content) -> Self {
         let mut alloc = Ref::new(1);
-        Self { 
-            document,
+        Self {
+            content,
             blog: Blog::default(),
             alloc,
             page_refs: vec![],
-         }
+        }
     }
 }
 

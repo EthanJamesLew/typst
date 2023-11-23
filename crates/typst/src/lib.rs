@@ -46,6 +46,7 @@ pub mod geom;
 pub mod image;
 pub mod model;
 
+use model::Content;
 #[doc(inline)]
 pub use typst_syntax as syntax;
 
@@ -60,6 +61,26 @@ use crate::doc::Document;
 use crate::eval::{Bytes, Datetime, Library, Route, Tracer};
 use crate::font::{Font, FontBook};
 use crate::syntax::{FileId, PackageSpec, Source, Span};
+
+/// collect the model of the source file (no compilation and no layout)
+#[tracing::instrument(skip_all)]
+pub fn contents(world: &dyn World, tracer: &mut Tracer) -> SourceResult<Content> {
+    let route = Route::default();
+
+    // Call `track` just once to keep comemo's ID stable.
+    let world = world.track();
+    let mut tracer = tracer.track_mut();
+
+    // Try to evaluate the source file into a module.
+    let module = eval::eval(
+        world,
+        route.track(),
+        TrackedMut::reborrow_mut(&mut tracer),
+        &world.main(),
+    );
+
+    Ok(module?.content())
+}
 
 /// Compile a source file into a fully layouted document.
 ///

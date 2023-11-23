@@ -9,7 +9,8 @@ use typst::diag::{bail, Severity, SourceDiagnostic, StrResult};
 use typst::doc::Document;
 use typst::eval::{eco_format, Datetime, Tracer};
 use typst::geom::Color;
-use typst::syntax::{FileId, Source, Span};
+use typst::model::Content;
+use typst::syntax::{parse, FileId, Source, Span};
 use typst::{World, WorldExt};
 use typst_blog::Blog;
 
@@ -84,12 +85,14 @@ pub fn compile_once(
 
     let mut tracer = Tracer::new();
     let result = typst::compile(world, &mut tracer);
+    let content = typst::contents(world, &mut tracer);
     let warnings = tracer.warnings();
 
     match result {
         // Export the PDF / PNG.
         Ok(document) => {
-            export(world, &document, command, watching)?;
+            // TODO: deal with unwrap
+            export(world, &document, &content.unwrap(), command, watching)?;
             let duration = start.elapsed();
 
             tracing::info!("Compilation succeeded in {duration:?}");
@@ -135,6 +138,8 @@ pub fn compile_once(
 fn export(
     world: &mut SystemWorld,
     document: &Document,
+    // add content item (this should likely be refactored)
+    content: &Content,
     command: &CompileCommand,
     watching: bool,
 ) -> StrResult<()> {
@@ -146,18 +151,18 @@ fn export(
             export_image(world, document, command, watching, ImageExportFormat::Svg)
         }
         OutputFormat::Pdf => export_pdf(document, command, world),
-        OutputFormat::Blog => export_blog(document, command, world),
+        OutputFormat::Blog => export_blog(content, command, world),
     }
 }
 
 /// Export to a Blog
 fn export_blog(
-    document: &Document,
+    content: &Content,
     command: &CompileCommand,
     world: &SystemWorld,
 ) -> StrResult<()> {
     let ident = world.input().to_string_lossy();
-    let blog_output = typst_blog::blog(document, Some(&ident), now());
+    let blog_output = typst_blog::blog(content, Some(&ident), now());
     let output = command.output();
     write_blog(&blog_output, &output)?;
     Ok(())
